@@ -162,49 +162,8 @@ main{
 }
 .arrow{font-size:17px;line-height:1;transform:translateY(-1px)}
 
-/* Cards taller than a phone screen scroll instead of sticking, so their bottom half stays reachable */
-.card.stay,.card.tall{position:relative;top:auto}
-
-/* Oct 2 poll */
-.poll{border-top:1px solid var(--line);padding-top:14px}
-.poll-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
-.poll-head h3{margin:0;font-size:18px;font-weight:850;letter-spacing:-.02em}
-.poll-total{color:var(--muted);font-size:12px;font-weight:700;white-space:nowrap}
-.poll-note{margin:4px 0 12px;color:var(--muted);font-size:12px;line-height:1.4}
-.spots{margin:0;padding:0;list-style:none;display:grid;gap:10px}
-.spot{
-  display:grid;
-  grid-template-columns:84px 1fr;
-  gap:12px;
-  padding:10px;
-  border-radius:18px;
-  background:var(--bg);
-}
-.thumb{width:84px;height:100%;min-height:96px;object-fit:cover;border-radius:12px;background:#d8d8d2;display:block}
-.spot-main{min-width:0;display:flex;flex-direction:column;gap:4px}
-.spot-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.spot h3{margin:0;font-size:16px;font-weight:850;letter-spacing:-.02em;line-height:1.15}
-.spot p{margin:0;color:var(--muted);font-size:12px;line-height:1.4}
-.spot-where{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
-.vote-btn{
-  flex:0 0 auto;
-  min-height:34px;
-  padding:0 14px;
-  border:0;
-  border-radius:999px;
-  background:var(--ink);
-  color:#fff;
-  font:inherit;
-  font-size:12px;
-  font-weight:850;
-  cursor:pointer;
-}
-.vote-btn[aria-pressed="true"]{background:#2f6b3f;cursor:default}
-.vote-btn:disabled:not([aria-pressed="true"]){opacity:.5}
-.bar{height:8px;margin-top:4px;border-radius:999px;background:rgba(16,18,15,.08);overflow:hidden}
-.bar span{display:block;height:100%;width:0;border-radius:inherit;background:var(--ink);transition:width .4s ease}
-.spot.leader .bar span{background:#2f6b3f}
-.count{font-size:12px;font-weight:800}
+/* Airbnb stay info — this card is taller than a phone screen, so it scrolls instead of sticking */
+.card.stay{position:relative;top:auto}
 .facts{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -526,96 +485,38 @@ main{
       </div>
     </article>
 
-    <article class="card tall">
+    <article class="card">
       <div class="media">
         <img loading="lazy" src="https://images.unsplash.com/photo-1638848424383-c59f174814ac?ixlib=rb-4.1.0&q=85&fm=jpg&crop=entropy&cs=srgb&w=1600" alt="Lake Louise in Banff National Park">
         <span class="pill">Fri · Oct 2</span>
       </div>
       <div class="body">
         <div class="row">
-          <h2 class="title">Lake Louise &amp; Banff</h2>
-          <span class="time">All day</span>
+          <h2 class="title">Lake Louise</h2>
+          <span class="time">Late morning</span>
         </div>
-        <p class="detail">Head west after check-out. Lake Louise shoreline first (~2 hr from Calgary), then the group picks what else. Early October can bring snow — pack layers.</p>
-
-        <section class="poll" aria-labelledby="poll-title">
-          <div class="poll-head">
-            <h3 id="poll-title">Vote: where else?</h3>
-            <span class="poll-total">Loading votes…</span>
-          </div>
-          <p class="poll-note">Tap Vote on every spot you’d go to. Results update for everyone.</p>
-          <ul class="spots">
-          <li class="spot" data-key="moraine">
-            <img class="thumb" loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/Moraine_Lake_17092005.jpg?width=480" alt="Moraine Lake with the Valley of the Ten Peaks">
-            <div class="spot-main">
-              <div class="spot-head">
-                <h3>Moraine Lake</h3>
-                <button type="button" class="vote-btn" aria-pressed="false">Vote</button>
-              </div>
-              <p>The famous turquoise lake under the Ten Peaks. No private cars — take the Parks Canada shuttle or Roam bus (book ahead).</p>
-              <span class="spot-where">15 min from Lake Louise</span>
-              <div class="bar"><span></span></div>
-              <span class="count">– votes</span>
-            </div>
-          </li>
-          <li class="spot" data-key="johnston">
-            <img class="thumb" loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/Johnston_Canyon_in_Banff_National_Park.jpg?width=480" alt="Catwalk trail in Johnston Canyon">
-            <div class="spot-main">
-              <div class="spot-head">
-                <h3>Johnston Canyon</h3>
-                <button type="button" class="vote-btn" aria-pressed="false">Vote</button>
-              </div>
-              <p>Catwalks bolted to canyon walls. Lower Falls 1.1 km, Upper Falls 2.6 km one way. Easy, great photos.</p>
-              <span class="spot-where">Bow Valley Pkwy · 40 min</span>
-              <div class="bar"><span></span></div>
-              <span class="count">– votes</span>
-            </div>
-          </li>
-          <li class="spot" data-key="gondola">
-            <img class="thumb" loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/Banff_Sulphur_Mountain_Gondola_IMG_4259.JPG?width=480" alt="Banff Gondola cabin on Sulphur Mountain">
-            <div class="spot-main">
-              <div class="spot-head">
-                <h3>Banff Gondola</h3>
-                <button type="button" class="vote-btn" aria-pressed="false">Vote</button>
-              </div>
-              <p>8-minute ride up Sulphur Mountain. Summit boardwalk, 360° views, food up top. Then walk Banff Avenue.</p>
-              <span class="spot-where">Banff town · 50 min</span>
-              <div class="bar"><span></span></div>
-              <span class="count">– votes</span>
-            </div>
-          </li>
-          <li class="spot" data-key="minnewanka">
-            <img class="thumb" loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/Banff_National_Park_(AB,_Canada),_Lake_Minnewanka_--_2022_--_2309.jpg?width=480" alt="Lake Minnewanka in Banff National Park">
-            <div class="spot-main">
-              <div class="spot-head">
-                <h3>Lake Minnewanka</h3>
-                <button type="button" class="vote-btn" aria-pressed="false">Vote</button>
-              </div>
-              <p>Big glacial lake just outside Banff. Lakeshore walk, Stewart Canyon bridge, and boat cruises (check fall schedule).</p>
-              <span class="spot-where">Near Banff · 55 min</span>
-              <div class="bar"><span></span></div>
-              <span class="count">– votes</span>
-            </div>
-          </li>
-          <li class="spot" data-key="emerald">
-            <img class="thumb" loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/Emerald_Lake_-_Yoho_National_Park,_BC,_Canada.jpg?width=480" alt="Emerald Lake in Yoho National Park">
-            <div class="spot-main">
-              <div class="spot-head">
-                <h3>Emerald Lake</h3>
-                <button type="button" class="vote-btn" aria-pressed="false">Vote</button>
-              </div>
-              <p>Across the BC border in Yoho. Green water, canoe rentals and a flat 5 km loop. Stop at Natural Bridge on the way.</p>
-              <span class="spot-where">Yoho, BC · 35 min</span>
-              <div class="bar"><span></span></div>
-              <span class="count">– votes</span>
-            </div>
-          </li>
-          </ul>
-        </section>
-
+        <p class="detail">Head west after check-out (~2 hr drive). Walk the lakeshore to the far end and back. Early October can bring snow — pack layers. Parking fills fast.</p>
         <div class="bottom">
           <span class="location">Banff National Park</span>
           <a class="cta" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=Lake+Louise%2C+Alberta">Directions <span class="arrow">↗</span></a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="media">
+        <img loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/Mt_Norquay.jpg?width=1400" onerror="this.onerror=null;this.src='https://commons.wikimedia.org/wiki/Special:FilePath/Norquay2.JPG?width=1400'" alt="Mount Norquay above Banff">
+        <span class="pill">Fri · Oct 2</span>
+      </div>
+      <div class="body">
+        <div class="row">
+          <h2 class="title">Mount Norquay</h2>
+          <span class="time">Afternoon</span>
+        </div>
+        <p class="detail">Sightseeing chairlift up to Cliffhouse Bistro views over Banff, and the Via Ferrata climbing route for the brave. Confirm fall hours before driving up.</p>
+        <div class="bottom">
+          <span class="location">Mt Norquay Rd · Banff · 45 min from Lake Louise</span>
+          <a class="cta" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=Mount+Norquay%2C+Banff%2C+AB">Directions <span class="arrow">↗</span></a>
         </div>
       </div>
     </article>
@@ -657,53 +558,6 @@ document.querySelectorAll('.reveal').forEach(function(btn){
   });
 });
 
-// Oct 2 poll. Counts live in Abacus (free public counter API); each device votes once per spot.
-(function(){
-  var API='https://abacus.jasoncameron.dev', NS='5unn7-calgary-trip-2026';
-  var spots=[].slice.call(document.querySelectorAll('.spot'));
-  var total=document.querySelector('.poll-total');
-  var counts={};
-  function voted(k){try{return localStorage.getItem('vote:'+k)==='1'}catch(e){return false}}
-  function remember(k){try{localStorage.setItem('vote:'+k,'1')}catch(e){}}
-  function render(){
-    var max=0,sum=0;
-    spots.forEach(function(s){var n=counts[s.dataset.key]||0;max=Math.max(max,n);sum+=n});
-    spots.forEach(function(s){
-      var n=counts[s.dataset.key]||0, btn=s.querySelector('.vote-btn');
-      s.querySelector('.bar span').style.width=(max?n/max*100:0)+'%';
-      s.querySelector('.count').textContent=n+(n===1?' vote':' votes');
-      s.classList.toggle('leader',max>0&&n===max);
-      if(voted(s.dataset.key)){btn.textContent='Voted ✓';btn.setAttribute('aria-pressed','true');btn.disabled=true}
-    });
-    total.textContent=sum+(sum===1?' vote':' votes')+' so far';
-  }
-  // A 404 means nobody has voted for that spot yet; a network error means results are unknown.
-  function get(k){
-    return fetch(API+'/get/'+NS+'/'+k).then(function(r){
-      if(r.status===404)return {value:0};
-      if(!r.ok)throw r;
-      return r.json();
-    }).then(function(d){counts[k]=d.value||0;return true},function(){return false});
-  }
-  function load(){
-    return Promise.all(spots.map(function(s){return get(s.dataset.key)})).then(function(ok){
-      render();
-      if(ok.indexOf(true)<0)total.textContent='Votes unavailable';
-    });
-  }
-  spots.forEach(function(s){
-    var k=s.dataset.key, btn=s.querySelector('.vote-btn');
-    btn.addEventListener('click',function(){
-      if(voted(k))return;
-      btn.disabled=true;btn.textContent='…';
-      fetch(API+'/hit/'+NS+'/'+k).then(function(r){if(!r.ok)throw r;return r.json()})
-        .then(function(d){remember(k);counts[k]=d.value;render()})
-        .catch(function(){btn.disabled=false;btn.textContent='Retry'});
-    });
-  });
-  load();
-  setInterval(load,30000);
-})();
 </script>
 </body>
 </html>

@@ -161,6 +161,90 @@ main{
   font-weight:850;
 }
 .arrow{font-size:17px;line-height:1;transform:translateY(-1px)}
+
+/* Airbnb stay info — this card is taller than a phone screen, so it scrolls instead of sticking */
+.card.stay{position:relative;top:auto}
+.facts{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.fact{
+  padding:12px 13px;
+  border-radius:16px;
+  background:var(--bg);
+  min-width:0;
+}
+.fact.wide{grid-column:1 / -1}
+.label{
+  display:block;
+  margin-bottom:4px;
+  color:var(--muted);
+  font-size:10px;
+  font-weight:850;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+}
+.value{
+  display:block;
+  font-size:15px;
+  font-weight:800;
+  line-height:1.25;
+  overflow-wrap:anywhere;
+}
+.sub{
+  display:block;
+  margin-top:3px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.35;
+}
+.value a,.sub a{color:inherit;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.02em}
+.rules{
+  border-top:1px solid var(--line);
+  padding-top:12px;
+}
+.rules summary{
+  cursor:pointer;
+  font-size:13px;
+  font-weight:850;
+  list-style:none;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.rules summary::-webkit-details-marker{display:none}
+.rules summary::after{content:"+";font-size:20px;line-height:1;color:var(--muted)}
+.rules[open] summary::after{content:"–"}
+.rules h3{
+  margin:14px 0 6px;
+  color:var(--muted);
+  font-size:10px;
+  font-weight:850;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+}
+.checklist{
+  margin:0;
+  padding:0;
+  list-style:none;
+  display:grid;
+  gap:6px;
+  font-size:13px;
+  line-height:1.4;
+}
+.checklist li{position:relative;padding-left:16px}
+.checklist li::before{
+  content:"";
+  position:absolute;
+  left:2px;
+  top:.55em;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--ink);
+}
 .card:nth-child(1){z-index:1}
 .card:nth-child(2){z-index:2}
 .card:nth-child(3){z-index:3}
@@ -207,7 +291,7 @@ main{
 
   <section class="stack">
 
-    <article class="card hero">
+    <article class="card hero stay">
       <div class="media">
         <img loading="eager" src="https://a0.muscache.com/im/pictures/hosting/Hosting-915788472714072274/original/a7d67ca1-a49e-4d01-9542-234846d6d170.jpeg?im_w=1200" alt="Ravine Retreat Airbnb in Calgary">
         <span class="pill">Sep 30 — Oct 2 · Stay</span>
@@ -215,12 +299,80 @@ main{
       <div class="body">
         <div class="row">
           <h1 class="title">Ravine Retreat</h1>
-          <span class="time">TBD</span>
+          <span class="time">4 PM in</span>
         </div>
         <p class="detail">4000+ sq ft Calgary home · 6 bedrooms · pool table · ravine &amp; mountain views.</p>
+
+        <div class="facts">
+          <div class="fact wide">
+            <span class="label">Address</span>
+            <span class="value">#120 Edgevalley Way NW</span>
+            <span class="sub">Calgary, AB T3A 5E1</span>
+          </div>
+          <div class="fact">
+            <span class="label">Check-in</span>
+            <span class="value">After 4:00 PM</span>
+            <span class="sub">Self check-in · key code sent 1 day before</span>
+          </div>
+          <div class="fact">
+            <span class="label">Check-out</span>
+            <span class="value">By 11:00 AM</span>
+            <span class="sub">Message host when leaving</span>
+          </div>
+          <div class="fact wide">
+            <span class="label">Wi-Fi</span>
+            <span class="value mono">TELUS3159</span>
+            <span class="sub">Password <strong class="mono">ds96shn8p8</strong></span>
+          </div>
+          <div class="fact">
+            <span class="label">Host · Kong</span>
+            <span class="value"><a href="tel:+14034621626">403-462-1626</a></span>
+            <span class="sub">Main contact</span>
+          </div>
+          <div class="fact">
+            <span class="label">Host · Mei</span>
+            <span class="value"><a href="tel:+14038169746">403-816-9746</a></span>
+            <span class="sub">Urgent only</span>
+          </div>
+          <div class="fact">
+            <span class="label">Guests</span>
+            <span class="value">Max 15</span>
+            <span class="sub">Including visitors</span>
+          </div>
+          <div class="fact">
+            <span class="label">Parking</span>
+            <span class="value">Max 5 cars</span>
+            <span class="sub">Never block the sidewalk</span>
+          </div>
+          <div class="fact wide">
+            <span class="label">Quiet hours</span>
+            <span class="value">10:00 PM – 8:00 AM</span>
+            <span class="sub">No parties — disturbances can mean immediate eviction</span>
+          </div>
+        </div>
+
+        <details class="rules">
+          <summary>House rules &amp; fees</summary>
+          <h3>Property care</h3>
+          <ul class="checklist">
+            <li>No smoking. No outdoor shoes inside.</li>
+            <li>No open flames or candles.</li>
+            <li>Wash dishes after use.</li>
+            <li>Don’t use white towels for makeup removal — extra cleaning fee.</li>
+            <li>No tape marks or paint damage on walls.</li>
+            <li>Ask the host before using the balcony BBQ.</li>
+            <li>AC control is in the 2nd-floor master room (summer only).</li>
+          </ul>
+          <h3>Damage &amp; loss</h3>
+          <ul class="checklist">
+            <li>Hand towel $20 · Bath towel $30</li>
+            <li>Remote control $100</li>
+          </ul>
+        </details>
+
         <div class="bottom">
-          <span class="location">Calgary, Alberta</span>
-          <a class="cta" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=Ravine+Retreat+Calgary+Alberta">Directions <span class="arrow">↗</span></a>
+          <span class="location">120 Edgevalley Way NW · Calgary</span>
+          <a class="cta" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=120+Edgevalley+Way+NW%2C+Calgary%2C+AB+T3A+5E1">Directions <span class="arrow">↗</span></a>
         </div>
       </div>
     </article>
@@ -238,7 +390,7 @@ main{
         <p class="detail">Arrival night at the Airbnb. Food, drinks, pool table and games.</p>
         <div class="bottom">
           <span class="location">Ravine Retreat</span>
-          <a class="cta" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=Ravine+Retreat+Calgary+Alberta">Directions <span class="arrow">↗</span></a>
+          <a class="cta" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=120+Edgevalley+Way+NW%2C+Calgary%2C+AB+T3A+5E1">Directions <span class="arrow">↗</span></a>
         </div>
       </div>
     </article>
@@ -306,12 +458,18 @@ main{
       <div class="body">
         <div class="row">
           <h2 class="title">Check out</h2>
-          <span class="time">TBD</span>
+          <span class="time">11:00 AM</span>
         </div>
         <p class="detail">Pack up, load the car and leave the Airbnb before heading west.</p>
+        <ul class="checklist">
+          <li>Leave the home tidy.</li>
+          <li>Bag any extra garbage and put it in the garage.</li>
+          <li>Close all windows and doors.</li>
+          <li>Message the host when you leave.</li>
+        </ul>
         <div class="bottom">
           <span class="location">Ravine Retreat</span>
-          <a class="cta" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=Ravine+Retreat+Calgary+Alberta">Directions <span class="arrow">↗</span></a>
+          <a class="cta" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=120+Edgevalley+Way+NW%2C+Calgary%2C+AB+T3A+5E1">Directions <span class="arrow">↗</span></a>
         </div>
       </div>
     </article>

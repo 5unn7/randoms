@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f3f1eb">
+<title>Calgary Trip · Sep 30–Oct 3</title>
+<style>
+:root{
+  --bg:#f3f1eb;
+  --card:#fff;
+  --ink:#10120f;
+  --muted:#6e726d;
+  --line:rgba(16,18,15,.09);
+  --radius:28px;
+  --shadow:0 22px 60px rgba(28,30,25,.11);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+main{
+  width:min(100%,760px);
+  margin:0 auto;
+  padding:16px 14px 110px;
+}
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:8px 4px 18px;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+}
+.topbar span:last-child{color:var(--muted)}
+.stack{display:grid;gap:18px}
+
+.card{
+  position:sticky;
+  top:12px;
+  min-height:420px;
+  border-radius:var(--radius);
+  background:var(--card);
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  border:1px solid rgba(255,255,255,.7);
+  display:grid;
+  grid-template-rows:230px auto;
+}
+.card.hero{
+  min-height:490px;
+  grid-template-rows:300px auto;
+}
+.media{
+  position:relative;
+  overflow:hidden;
+  background:#d8d8d2;
+}
+.media img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.media::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,rgba(0,0,0,.02),rgba(0,0,0,.24));
+}
+.pill{
+  position:absolute;
+  z-index:2;
+  top:16px;
+  left:16px;
+  display:inline-flex;
+  align-items:center;
+  min-height:34px;
+  padding:0 12px;
+  border-radius:999px;
+  color:white;
+  background:rgba(12,14,12,.42);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  font-size:11px;
+  font-weight:850;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.body{
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+}
+.title{
+  margin:0;
+  font-size:clamp(30px,7vw,44px);
+  line-height:.98;
+  letter-spacing:-.045em;
+  font-weight:850;
+}
+.hero .title{
+  font-size:clamp(38px,9vw,54px);
+}
+.time{
+  flex:0 0 auto;
+  font-size:13px;
+  font-weight:850;
+  padding-top:4px;
+}
+.detail{
+  margin:0;
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.4;
+  max-width:570px;
+}
+.bottom{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:auto;
+}
+.location{
+  min-width:0;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:700;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+.cta{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-height:46px;
+  padding:0 16px;
+  border-radius:999px;
+  background:#111310;
+  color:#fff;
+  text-decoration:none;
+  font-size:13px;
+  font-weight:850;
+}
+.arrow{font-size:17px;line-height:1;transform:translateY(-1px)}
+.card:nth-child(1){z-index:1}
+.card:nth-child(2){z-index:2}
+.card:nth-child(3){z-index:3}
+.card:nth-child(4){z-index:4}
+.card:nth-child(5){z-index:5}
+.card:nth-child(6){z-index:6}
+.card:nth-child(7){z-index:7}
+.card:nth-child(8){z-index:8}
+.card:nth-child(9){z-index:9}
+
+@media (max-width:560px){
+  main{padding:10px 10px 90px}
+  .topbar{padding:8px 4px 14px}
+  .stack{gap:14px}
+  .card{
+    top:8px;
+    min-height:388px;
+    grid-template-rows:205px auto;
+    border-radius:24px;
+  }
+  .card.hero{
+    min-height:452px;
+    grid-template-rows:270px auto;
+  }
+  .body{padding:17px;gap:11px}
+  .title{font-size:34px}
+  .hero .title{font-size:42px}
+  .detail{font-size:13px}
+  .cta{min-height:44px;padding:0 14px}
+}
+@media (max-width:390px){
+  .location{max-width:180px}
+  .title{font-size:31px}
+  .hero .title{font-size:39px}
+}
+</style>
+</head>
+<body>
+<main>
+  <div class="topbar">
+    <span>Calgary Trip</span>
+    <span>Sep 30 — Oct 3</span>
+  </div>
+
+  <section class="stack">
+
+    <article class="card hero">
+      <div class="media">
+        <img loading="eager" src="https://a0.muscache.com/im/pictures/hosting/Hosting-915788472714072274/original/a7d67ca1-a49e-4d01-9542-234846d6d170.jpeg?im_w=1200" alt="Ravine Retreat Airbnb in Calgary">
+        <span class="pill">Sep 30 — Oct 2 · Stay</span>
+      </div>
+      <div class="body">
+        <div class="row">
+          <h1 class="title">Ravine Retreat</h1>
+          <span class="time">TBD</span>
+        </div>
+        <p class="detail">4000+ sq ft Calgary home · 6 bedrooms · pool table · ravine &amp; mountain views.</p>
+        <div class="bottom">
+          <span class="location">Calgary, Alberta</span>
+          <a class="cta" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=Ravine+Retreat+Calgary+Alberta">Directions <span class="arrow">↗</span></a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="media">
+        <img loading="lazy" style="object-position:center 48%" src="https://images.pexels.com/photos/7403848/pexels-photo-7403848.jpeg?auto=compress&dpr=1&h=750&w=1260" referrerpolicy="no-referrer" alt="Friends playing pool together">
+        <span class="pill">Wed · Sep 30</span>
+      </div>
+      <div class="body">
+        <div class="row">
+          <h2 class="title">House party &amp; games</h2>
+          <span class="time">Night</span>
+        </div>
+        <p class="detail">Arrival night at the Airbnb. Food, drinks, pool table and games.</p>
+        <div class="bottom">
+          <span class="location">Ravine Retreat</span>
+          <a class="cta" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=Ravine+Retreat+Calgary+Alberta">Directions <span class="arrow">↗</span></a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="media">
+        <img loading="lazy" src="https://images.squarespace-cdn.com/content/v1/530ef180e4b0c3335b95e123/1475012858150-B0DB5Y2WUYKXQSBCMN92/IMG_5887-3318768516-O.jpg" alt="Bragg Creek Paintball field">
+        <span class="pill">Thu · Oct 1</span>
+      </div>
+      <div class="body">
+        <div class="row">
+          <h2 class="title">Bragg Creek Paintball</h2>
+          <span class="time">TBD</span>
+        </div>
+        <p class="detail">Outdoor paintball in the foothills. Arrive 15 min early; October’s last booking is 4 PM.</p>
+        <div class="bottom">
+          <span class="location">2221 Highway 22 · Bragg Creek</span>
+          <a class="cta" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=Bragg+Creek+Paintball%2C+2221+Highway+22%2C+Alberta">Directions <span class="arrow">↗</span></a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="media">
+        <img loading="lazy" src="https://cdn.visitcalgary.com/containers/media/outdoor_attractions/winsport/outdoor-attractions_winsport_downhill-karting-friends.jpg/70c98867cf118fe3c3980b0fb9e49e5f/outdoor-attractions_winsport_downhill-karting-friends.jpg" alt="Downhill Karting at WinSport">
+        <span class="pill">Thu · Oct 1</span>
+      </div>
+      <div class="body">
+        <div class="row">
+          <h2 class="title">Downhill Karting</h2>
+          <span class="time">TBD</span>
+        </div>
+        <p class="detail">1.8 km gravity track at WinSport with 50+ twists and turns. Seasonal opening still needs confirmation.</p>
+        <div class="bottom">
+          <span class="location">WinSport · Calgary</span>
+          <a class="cta" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=Downhill+Karting+WinSport+Calgary">Directions <span class="arrow">↗</span></a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="media">
+        <img loading="lazy" src="https://images.pexels.com/photos/1325751/pexels-photo-1325751.jpeg?auto=compress&cs=tinysrgb&w=1400" referrerpolicy="no-referrer" alt="Golf driving range with clubs and balls" style="object-position:center 60%">
+        <span class="pill">Thu · Oct 1 · Night</span>
+      </div>
+      <div class="body">
+        <div class="row">
+          <h2 class="title">LaunchPad Golf</h2>
+          <span class="time">TBD</span>
+        </div>
+        <p class="detail">Night golf, food and drinks in a heated suite at Mickelson National.</p>
+        <div class="bottom">
+          <span class="location">Mickelson National · Rocky View County</span>
+          <a class="cta" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=LaunchPad+Golf+Mickelson+National%2C+Alberta">Directions <span class="arrow">↗</span></a>
+        </div>
+      </div>
+    </article>
+
+
+    <article class="card">
+      <div class="media">
+        <img loading="lazy" src="https://a0.muscache.com/im/pictures/hosting/Hosting-915788472714072274/original/a7d67ca1-a49e-4d01-9542-234846d6d170.jpeg?im_w=1200" alt="Ravine Retreat Airbnb">
+        <span class="pill">Fri · Oct 2</span>
+      </div>
+      <div class="body">
+        <div class="row">
+          <h2 class="title">Check out</h2>
+          <span class="time">TBD</span>
+        </div>
+        <p class="detail">Pack up, load the car and leave the Airbnb before heading west.</p>
+        <div class="bottom">
+          <span class="location">Ravine Retreat</span>
+          <a class="cta" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=Ravine+Retreat+Calgary+Alberta">Directions <span class="arrow">↗</span></a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="media">
+        <img loading="lazy" src="https://images.unsplash.com/photo-1638848424383-c59f174814ac?ixlib=rb-4.1.0&q=85&fm=jpg&crop=entropy&cs=srgb&w=1600" alt="Lake Louise in Banff National Park">
+        <span class="pill">Fri · Oct 2</span>
+      </div>
+      <div class="body">
+        <div class="row">
+          <h2 class="title">Lake Louise</h2>
+          <span class="time">TBD</span>
+        </div>
+        <p class="detail">Lakeshore stop in Banff National Park. Early October can bring winter conditions.</p>
+        <div class="bottom">
+          <span class="location">Banff National Park</span>
+          <a class="cta" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=Lake+Louise%2C+Alberta">Directions <span class="arrow">↗</span></a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="media">
+        <img loading="lazy" style="object-position:center 34%" src="https://www.calgaryzoo.com/wp-content/uploads/2023/09/DSC_4138-1.jpg" referrerpolicy="no-referrer" alt="Giraffe at Wilder Institute Calgary Zoo">
+        <span class="pill">Fri · Oct 2</span>
+      </div>
+      <div class="body">
+        <div class="row">
+          <h2 class="title">Calgary Zoo</h2>
+          <span class="time">TBD</span>
+        </div>
+        <p class="detail">Wilder Institute / Calgary Zoo. Keep this flexible around the Lake Louise return drive.</p>
+        <div class="bottom">
+          <span class="location">St. George's Drive NE · Calgary</span>
+          <a class="cta" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=Calgary+Zoo%2C+Calgary%2C+AB">Directions <span class="arrow">↗</span></a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="media">
+        <img loading="lazy" src="https://assets.cadillacfairview.com/transform/aaf899f7-9648-4be6-8a7c-82a0c6c878e3/-CF-Chinook-Centre-Opengraph?io=transform%3Afill%2Cwidth%3A1600&q=80" alt="CF Chinook Centre in Calgary">
+        <span class="pill">Sat · Oct 3</span>
+      </div>
+      <div class="body">
+        <div class="row">
+          <h2 class="title">Shopping</h2>
+          <span class="time">TBD</span>
+        </div>
+        <p class="detail">Easy final-day shopping stop. CF Chinook Centre set as the default destination.</p>
+        <div class="bottom">
+          <span class="location">CF Chinook Centre · Calgary</span>
+          <a class="cta" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=CF+Chinook+Centre%2C+Calgary%2C+AB">Directions <span class="arrow">↗</span></a>
+        </div>
+      </div>
+    </article>
+
+  </section>
+</main>
+</body>
+</html>

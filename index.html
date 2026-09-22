@@ -200,6 +200,17 @@ main{
   line-height:1.35;
 }
 .value a,.sub a{color:inherit;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.reveal{
+  font:inherit;
+  color:inherit;
+  font-weight:800;
+  padding:2px 10px;
+  border:1px dashed var(--muted);
+  border-radius:999px;
+  background:var(--card);
+  cursor:pointer;
+}
+.reveal.mono{font-family:inherit;font-size:12px}
 .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.02em}
 .rules{
   border-top:1px solid var(--line);
@@ -322,16 +333,16 @@ main{
           <div class="fact wide">
             <span class="label">Wi-Fi</span>
             <span class="value mono">TELUS3159</span>
-            <span class="sub">Password <strong class="mono">ds96shn8p8</strong></span>
+            <span class="sub">Password <button type="button" class="reveal mono" data-v="ZHM5NnNobjhwOA==">Tap to reveal</button></span>
           </div>
           <div class="fact">
             <span class="label">Host · Kong</span>
-            <span class="value"><a href="tel:+14034621626">403-462-1626</a></span>
+            <span class="value"><button type="button" class="reveal" data-v="NDAzLTQ2Mi0xNjI2" data-tel>Tap to reveal</button></span>
             <span class="sub">Main contact</span>
           </div>
           <div class="fact">
             <span class="label">Host · Mei</span>
-            <span class="value"><a href="tel:+14038169746">403-816-9746</a></span>
+            <span class="value"><button type="button" class="reveal" data-v="NDAzLTgxNi05NzQ2" data-tel>Tap to reveal</button></span>
             <span class="sub">Urgent only</span>
           </div>
           <div class="fact">
@@ -530,5 +541,22 @@ main{
 
   </section>
 </main>
+<script>
+// Sensitive stay details are stored encoded and only shown on tap.
+document.querySelectorAll('.reveal').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var v=atob(btn.dataset.v), el;
+    if(btn.hasAttribute('data-tel')){
+      el=document.createElement('a');
+      el.href='tel:+1'+v.replace(/\D/g,'');
+    }else{
+      el=document.createElement('strong');
+    }
+    el.className=btn.className.replace('reveal','').trim();
+    el.textContent=v;
+    btn.replaceWith(el);
+  });
+});
+</script>
 </body>
 </html>

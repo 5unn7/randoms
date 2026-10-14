@@ -6,8 +6,8 @@ import kotlin.test.*
 
 class LayoutTest {
     private val specs = buildList {
-        for (a in Alphabets.all) for (shape in KeyShape.entries) for (split in listOf(false, true)) for (panel in listOf(false, true)) for (page in Page.entries)
-            add(LayoutSpec(alphabet = a, page = page, shape = shape, split = split, centerPanel = panel && split))
+        for (a in Alphabets.all) for (shape in KeyShape.entries) for (split in listOf(false, true)) for (panel in listOf(false, true)) for (page in Page.entries) for (back in listOf(false, true))
+            add(LayoutSpec(alphabet = a, page = page, shape = shape, split = split, centerPanel = panel && split, backspaceKey = back))
     }
 
     @Test fun everyLetterIsReachableOnEveryLetterLayout() {
@@ -20,7 +20,8 @@ class LayoutTest {
     @Test fun essentialKeysPresent() {
         for (s in specs) {
             val types = LayoutFactory.build(s).keys.map { it.type }.toSet()
-            for (t in listOf(KeyType.SPACE, KeyType.BACKSPACE, KeyType.ENTER, KeyType.EMOJI)) assertTrue(t in types, "$t missing in $s")
+            for (t in listOf(KeyType.SPACE, KeyType.ENTER, KeyType.EMOJI)) assertTrue(t in types, "$t missing in $s")
+            assertEquals(s.backspaceKey, KeyType.BACKSPACE in types, "$s")
             if (s.page == Page.LETTERS) assertTrue(KeyType.SHIFT in types && KeyType.SYMBOLS in types, "$s")
             else assertTrue(KeyType.LETTERS in types, "$s")
         }

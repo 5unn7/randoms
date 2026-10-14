@@ -164,10 +164,15 @@ class SettingsActivity : Activity(), SharedPreferences.OnSharedPreferenceChangeL
             choice("Split keyboard", Prefs.SPLIT_MODE, "auto", listOf("auto" to "Automatic: split when unfolded", "always" to "Always split", "never" to "Never split"))
             toggle("Number & symbol panel", "Between the halves when split", Prefs.CENTER_PANEL, true)
             toggle("Microphone key", "Also always available in the top bar", Prefs.MIC_KEY, true)
+            toggle("Backspace key", "Off: swipe left on the letters to delete", Prefs.BACKSPACE_KEY, false)
             choice("One-handed mode (folded)", Prefs.ONE_HANDED, "off", listOf("off" to "Off", "left" to "Left hand", "right" to "Right hand"))
         }
 
         card("Size") {
+            addView(TextView(this@SettingsActivity).apply {
+                text = "Tip: on the keyboard, tap the ⠿ button (top-left), then Resize, to drag the keyboard's height, width and position like on Samsung Keyboard. Folded and unfolded sizes are saved separately."
+                textSize = 13f; setTextColor(cDim); setPadding(0, dp(8), 0, dp(4))
+            })
             slider("Height when folded", Prefs.HEIGHT_FOLDED, 100, 60, 160) { "$it%" }
             slider("Height when unfolded", Prefs.HEIGHT_UNFOLDED, 100, 60, 160) { "$it%" }
             slider("Gap between split halves", Prefs.SPLIT_GAP, 30, 0, 80) { "%.1f keys".format(it / 10f) }
@@ -190,9 +195,11 @@ class SettingsActivity : Activity(), SharedPreferences.OnSharedPreferenceChangeL
         card("Gestures") {
             toggle("Swipe up = capital", "Flick a letter up for its capital", Prefs.SWIPE_UP, true)
             toggle("Swipe down = symbol", "Flick down for the small symbol on the key", Prefs.SWIPE_DOWN, true)
-            toggle("Swipe left = delete word", "Flick left on any letter, space or backspace", Prefs.SWIPE_LEFT, true)
+            toggle("Swipe left = delete", "Swipe left on any letter. Keep dragging or hold to delete more, drag back right to undo", Prefs.SWIPE_LEFT, true)
+            choice("Swipe left deletes", Prefs.SWIPE_LEFT_MODE, "char", listOf("char" to "One character at a time", "word" to "A whole word"))
             toggle("Swipe right = restore word", "Bring back the last deleted word", Prefs.SWIPE_RIGHT, true)
-            toggle("Space bar cursor", "Slide along a space key to move the cursor", Prefs.SPACE_CURSOR, true)
+            toggle("Space bar trackpad", "Slide on a space key to move the cursor, up/down to change lines", Prefs.SPACE_CURSOR, true)
+            toggle("Double-tap space to select", "Double-tap and hold space, then drag to select text (like holding a mouse button)", Prefs.SPACE_SELECT, true)
             toggle("Glide typing (beta)", "Slide across letters to type a word. Works when the keyboard isn't split. Long letter swipes become words instead of deletes.", Prefs.GLIDE, false)
             slider("Long-press delay", Prefs.LONG_PRESS, 320, 150, 700) { "$it ms" }
         }
@@ -201,6 +208,7 @@ class SettingsActivity : Activity(), SharedPreferences.OnSharedPreferenceChangeL
             toggle("Keep listening", "Dictate across pauses until you tap stop", Prefs.VOICE_CONTINUOUS, true)
             toggle("Spoken punctuation", "Say “comma”, “period”, “new line” (English)", Prefs.VOICE_COMMANDS, true)
             toggle("Prefer on-device recognition", "Private and works offline when your phone supports it", Prefs.VOICE_OFFLINE, true)
+            slider("Stop after silence", Prefs.VOICE_SILENCE, 20, 5, 90) { "$it s" }
         }
 
         card("Look & feel") {
@@ -367,10 +375,16 @@ class SettingsActivity : Activity(), SharedPreferences.OnSharedPreferenceChangeL
             override fun onText(text: String, key: Key?, x: Float, y: Float, forceUpper: Boolean) {}
             override fun onAction(type: KeyType) {}
             override fun onLongPressAction(type: KeyType) = false
+            override fun onDeleteScrub(count: Int) {}
+            override fun onDeleteScrubEnd() {}
             override fun onDeleteWord() {}
             override fun onRestoreWord() {}
-            override fun onCursorMove(delta: Int) {}
+            override fun onSelectStart() {}
+            override fun onSelectEnd() {}
+            override fun onCursorMove(dx: Int, dy: Int, select: Boolean) {}
             override fun onGlide(xs: FloatArray, ys: FloatArray, count: Int) {}
+            override fun onResize(dHeight: Float, dLeft: Float, dRight: Float, dBottom: Float) {}
+            override fun onResizeDone(reset: Boolean) {}
         })
         v.clipToOutline = true
         v.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
@@ -385,16 +399,19 @@ class SettingsActivity : Activity(), SharedPreferences.OnSharedPreferenceChangeL
         val split = when (prefs.splitMode) { "always" -> true; "never" -> false; else -> unfolded }
         val shape = if (prefs.keyStyle == "classic") KeyShape.RECT else KeyShape.HEX
         val layout = LayoutFactory.build(
-            LayoutSpec(Alphabets.byId(prefs.alphabet), shape = shape, split = split, centerPanel = split && prefs.centerPanel, splitGap = prefs.splitGap / 10f, micKey = prefs.micKey)
+            LayoutSpec(Alphabets.byId(prefs.alphabet), shape = shape, split = split, centerPanel = split && prefs.centerPanel, splitGap = prefs.splitGap / 10f, micKey = prefs.micKey, backspaceKey = prefs.backspaceKey)
         )
-        val scale = (if (unfolded) prefs.heightUnfolded else prefs.heightFolded) / 100f
+        val scale = prefs.height(unfolded) / 100f
         val rows = layout.rows + if (shape == KeyShape.HEX) 1f / 3f else 0f
+        val unitDp = (resources.configuration.screenWidthDp - 64) / layout.width
+        val rowDp = (if (shape == KeyShape.HEX) unitDp / (1.1547f * 0.8f) else unitDp * 1.3f).coerceIn(30f, 64f)
         v.theme = KbTheme.resolve(this, prefs)
         v.config = ViewConfig(
-            heightPx = (rows * (if (unfolded) 62f else 54f) * scale * 0.75f * resources.displayMetrics.density).toInt(),
+            heightPx = (rows * rowDp * scale * resources.displayMetrics.density).toInt(),
             keyGapPx = dp(prefs.keyGap).toFloat(), labelScale = prefs.labelScale / 100f, showSecondary = prefs.showSecondary,
             oneHanded = if (unfolded) "off" else prefs.oneHanded, swipeUpCaps = false, swipeDownSymbol = false,
-            swipeLeftDelete = false, swipeRightRestore = false, spaceCursor = false, glide = false, longPressMs = 400, keyPopup = false,
+            swipeLeftDelete = false, swipeLeftChars = true, swipeRightRestore = false, spaceCursor = false, spaceSelect = false,
+            glide = false, longPressMs = 400, keyPopup = false,
         )
         v.spaceLabel = Prefs.LANGUAGES.firstOrNull { it.first == prefs.language }?.second ?: ""
         v.layout = layout

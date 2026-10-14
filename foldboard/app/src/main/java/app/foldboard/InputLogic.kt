@@ -47,6 +47,13 @@ class InputLogic(private val service: FoldBoardService) {
     private var lastGlide: String? = null
     private var glideAlternatives: List<String> = emptyList()
     private var voiceLen = 0
+    private var selStart = 0
+    private var selEnd = 0
+    private var spaceJustTyped = false
+
+    // Swipe-left scrub: characters removed in the current gesture, most recent last.
+    private val scrubDeleted = ArrayList<String>()
+    private var scrubCount = 0
 
     var shift = ShiftState.OFF
         private set(value) { field = value; service.onShiftChanged(value) }
@@ -94,6 +101,8 @@ class InputLogic(private val service: FoldBoardService) {
     }
 
     fun onUpdateSelection(newSelStart: Int, newSelEnd: Int, candidatesStart: Int, candidatesEnd: Int) {
+        selStart = newSelStart
+        selEnd = newSelEnd
         if (voiceLen > 0) return
         if (composing.isNotEmpty() && (candidatesEnd == -1 || newSelStart != candidatesEnd || newSelEnd != candidatesEnd)) {
             // The cursor moved away from the word we were building (tap elsewhere, app edit).
@@ -135,6 +144,7 @@ class InputLogic(private val service: FoldBoardService) {
     fun onText(text: String, x: Float, y: Float, forceUpper: Boolean) {
         val c = ic ?: return
         lastGlide = null
+        spaceJustTyped = false
         val letter = text.length == 1 && text[0].isLetter()
         val t = if (letter && (forceUpper || shift != ShiftState.OFF)) text.uppercase() else text
         val ch = t[0]
@@ -208,6 +218,7 @@ class InputLogic(private val service: FoldBoardService) {
             }
         }
         lastSpaceTime = now
+        spaceJustTyped = true
         updateShiftAuto()
         refreshSuggestions()
     }
@@ -328,12 +339,107 @@ class InputLogic(private val service: FoldBoardService) {
         refreshSuggestions()
     }
 
-    fun moveCursor(delta: Int) {
+    /** Space-bar trackpad: arrow keys, with Shift held while selecting. */
+    fun moveCursor(dx: Int, dy: Int, select: Boolean) {
         val c = ic ?: return
         if (composing.isNotEmpty()) { c.finishComposingText(); resetWord() }
-        lastCorrection = null; autoSpaced = false
-        val code = if (delta < 0) KeyEvent.KEYCODE_DPAD_LEFT else KeyEvent.KEYCODE_DPAD_RIGHT
-        repeat(minOf(kotlin.math.abs(delta), 12)) { service.sendDownUpKeyEvents(code) }
+        lastCorrection = null; autoSpaced = false; spaceJustTyped = false
+        val meta = if (select) KeyEvent.META_SHIFT_ON or KeyEvent.META_SHIFT_LEFT_ON else 0
+        fun send(code: Int, n: Int) = repeat(minOf(n, 12)) {
+            val t = SystemClock.uptimeMillis()
+            c.sendKeyEvent(KeyEvent(t, t, KeyEvent.ACTION_DOWN, code, 0, meta))
+            c.sendKeyEvent(KeyEvent(t, t, KeyEvent.ACTION_UP, code, 0, meta))
+        }
+        if (dx != 0) send(if (dx < 0) KeyEvent.KEYCODE_DPAD_LEFT else KeyEvent.KEYCODE_DPAD_RIGHT, kotlin.math.abs(dx))
+        if (dy != 0) send(if (dy < 0) KeyEvent.KEYCODE_DPAD_UP else KeyEvent.KEYCODE_DPAD_DOWN, kotlin.math.abs(dy))
+    }
+
+    /** Double-tap-and-hold on space: start selecting (like holding the mouse button). */
+    fun selectStart() {
+        val c = ic ?: return
+        // The first tap of the double tap typed a space: take it back.
+        if (spaceJustTyped && SystemClock.uptimeMillis() - lastSpaceTime < 800 && c.getTextBeforeCursor(1, 0)?.toString() == " ") {
+            c.deleteSurroundingText(1, 0)
+        }
+        spaceJustTyped = false
+        if (composing.isNotEmpty()) { c.finishComposingText(); resetWord() }
+        val t = SystemClock.uptimeMillis()
+        c.sendKeyEvent(KeyEvent(t, t, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SHIFT_LEFT, 0, KeyEvent.META_SHIFT_ON or KeyEvent.META_SHIFT_LEFT_ON))
+    }
+
+    fun selectEnd() {
+        val c = ic ?: return
+        val t = SystemClock.uptimeMillis()
+        c.sendKeyEvent(KeyEvent(t, t, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_SHIFT_LEFT, 0, 0))
+        refreshSuggestions()
+    }
+
+    // ------------------------------------------------------------------ swipe-left scrub
+
+    /** [count] characters should be deleted in this gesture; fewer than before means restore. */
+    fun deleteScrub(count: Int) {
+        val c = ic ?: return
+        if (scrubCount == 0 && scrubDeleted.isEmpty()) {
+            lastGlide = null; autoSpaced = false; spaceJustTyped = false
+            if (composing.isNotEmpty()) { c.finishComposingText(); resetWord() }
+        }
+        c.beginBatchEdit()
+        while (scrubCount < count) {
+            if (!deleteOne(c)) break
+            scrubCount++
+        }
+        while (scrubCount > count && scrubDeleted.isNotEmpty()) {
+            c.commitText(scrubDeleted.removeAt(scrubDeleted.size - 1), 1)
+            scrubCount--
+        }
+        c.endBatchEdit()
+        lastCorrection = null
+    }
+
+    private fun deleteOne(c: InputConnection): Boolean {
+        // First delete right after an autocorrection undoes it, like backspace.
+        if (scrubCount == 0) lastCorrection?.let { (original, corrected) ->
+            val before = c.getTextBeforeCursor(corrected.length + 1, 0)?.toString()
+            val len = when {
+                before == null -> 0
+                before.endsWith("$corrected ") -> corrected.length + 1
+                before.endsWith(corrected) -> corrected.length
+                else -> 0
+            }
+            if (len > 0) {
+                c.deleteSurroundingText(len, 0)
+                c.commitText(original, 1)
+                engine?.rejectCorrection(original)
+                scrubDeleted += "" // step used by the undo; nothing to restore
+                lastCorrection = null
+                return true
+            }
+        }
+        val sel = c.getSelectedText(0)
+        if (!sel.isNullOrEmpty()) {
+            scrubDeleted += sel.toString()
+            c.commitText("", 1)
+            return true
+        }
+        val before = c.getTextBeforeCursor(2, 0) ?: return false
+        if (before.isEmpty()) return false
+        val n = if (before.length == 2 && Character.isSurrogatePair(before[0], before[1])) 2 else 1
+        scrubDeleted += before.substring(before.length - n).toString()
+        c.deleteSurroundingText(n, 0)
+        return true
+    }
+
+    fun deleteScrubEnd() {
+        if (scrubDeleted.isNotEmpty()) pushDeleted(scrubDeleted.reversed().joinToString(""))
+        scrubDeleted.clear()
+        scrubCount = 0
+        // Selection updates can lag behind our edits; ask the editor for the real cursor.
+        val et = ic?.getExtractedText(android.view.inputmethod.ExtractedTextRequest(), 0)
+        if (et != null && et.selectionStart == et.selectionEnd && et.selectionStart >= 0) {
+            resumeWordAt(et.startOffset + et.selectionStart)
+        }
+        updateShiftAuto()
+        refreshSuggestions()
     }
 
     fun onShiftKey() {
@@ -410,6 +516,17 @@ class InputLogic(private val service: FoldBoardService) {
     fun onPick(item: StripItem) {
         val c = ic ?: return
         if (item.kind == StripItem.Kind.CLIP) { commitRaw(item.text); return }
+        if (item.kind == StripItem.Kind.ACTION) {
+            val id = when (item.text) {
+                "Cut" -> android.R.id.cut
+                "Copy" -> android.R.id.copy
+                "Paste" -> android.R.id.paste
+                else -> android.R.id.selectAll
+            }
+            c.performContextMenuAction(id)
+            if (id == android.R.id.copy) service.flash("Copied")
+            return
+        }
         val word = item.text
         val glided = lastGlide
         when {
@@ -454,6 +571,10 @@ class InputLogic(private val service: FoldBoardService) {
 
     fun refreshSuggestions() {
         if (voiceLen > 0) return
+        if (selStart != selEnd && composing.isEmpty()) {
+            service.showSuggestions(listOf("Cut", "Copy", "Paste", "Select all").map { StripItem(it, StripItem.Kind.ACTION) })
+            return
+        }
         val e = engine
         if (!prefs.suggestions || !allowComposing || e == null) {
             val clip = service.freshClip()

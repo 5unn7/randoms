@@ -31,6 +31,8 @@ data class LayoutSpec(
     val splitGap: Float = 3f,
     /** Show a dedicated mic key on the keyboard (it is always in the suggestion strip too). */
     val micKey: Boolean = true,
+    /** Dedicated backspace key. Off by default: swipe left deletes. */
+    val backspaceKey: Boolean = false,
 )
 
 object LayoutFactory {
@@ -86,11 +88,12 @@ object LayoutFactory {
         val (l0, r0) = rows[0]; val (l1, r1) = rows[1]; val (l2, r2) = rows[2]
         val clusters = ArrayList<Pair<List<List<Cell>>, Cluster>>()
         val mic = if (spec.micKey) listOf(Cell(KeyType.MIC, "mic")) else emptyList()
+        val back = if (spec.backspaceKey) listOf(Cell(KeyType.BACKSPACE)) else emptyList()
         if (!spec.split) {
             val punct = if (page == Page.LETTERS) listOf("'", "?") else listOf(",", ".")
             val g = mutableListOf(
                 chars(l0 + r0).toMutableList(),
-                (chars(l1) + Cell(KeyType.SPACE) + chars(r1) + Cell(KeyType.BACKSPACE)).toMutableList(),
+                (chars(l1) + Cell(KeyType.SPACE) + chars(r1) + back).toMutableList(),
                 (listOf(shiftCell(page)) + chars(l2 + r2)).toMutableList(),
                 (listOf(pageCell(page), Cell(KeyType.EMOJI, "emoji")) + mic + listOf(ch(punct[0]), Cell(KeyType.SPACE), Cell(KeyType.SPACE), ch(punct[1]), Cell(KeyType.CLIPBOARD, "clip"), Cell(KeyType.ENTER, "enter"))).toMutableList(),
             )
@@ -107,7 +110,7 @@ object LayoutFactory {
             )
             val right = mutableListOf(
                 chars(r0).toMutableList(),
-                chars(r1).toMutableList().also { it.add(minOf(2, it.size), Cell(KeyType.SPACE)); it.add(Cell(KeyType.BACKSPACE)) },
+                chars(r1).toMutableList().also { it.add(minOf(2, it.size), Cell(KeyType.SPACE)); it.addAll(back) },
                 chars(r2).toMutableList(),
                 (listOf(Cell(KeyType.SPACE), Cell(KeyType.SPACE)) + mic + listOf(ch(rp), Cell(KeyType.CLIPBOARD, "clip"), Cell(KeyType.ENTER, "enter"))).toMutableList(),
             )
@@ -170,7 +173,7 @@ object LayoutFactory {
         val page = spec.page
         val (l0, r0) = rows[0]; val (l1, r1) = rows[1]; val (l2, r2) = rows[2]
         val shift = shiftCell(page).copy(w = 1.5f)
-        val back = Cell(KeyType.BACKSPACE, w = 1.5f)
+        val back = if (spec.backspaceKey) listOf(Cell(KeyType.BACKSPACE, w = 1.5f)) else emptyList()
         val clusters = ArrayList<Pair<List<List<Cell>>, Cluster>>()
         if (!spec.split) {
             val top = chars(l0 + r0)

@@ -129,4 +129,47 @@ object Icons {
         path.lineTo(cx + w, cy - w * 0.4f)
         c.drawPath(path, p)
     }
+
+    /** Four-way arrows (move). */
+    fun move(c: Canvas, cx: Float, cy: Float, s: Float, p: Paint) {
+        stroke(p, s)
+        val r = s * 0.36f; val a = s * 0.11f
+        c.drawLine(cx - r, cy, cx + r, cy, p)
+        c.drawLine(cx, cy - r, cx, cy + r, p)
+        for ((dx, dy) in listOf(1f to 0f, -1f to 0f, 0f to 1f, 0f to -1f)) {
+            val tx = cx + dx * r; val ty = cy + dy * r
+            path.reset()
+            path.moveTo(tx - dx * a - dy * a, ty - dy * a - dx * a)
+            path.lineTo(tx, ty)
+            path.lineTo(tx - dx * a + dy * a, ty - dy * a + dx * a)
+            c.drawPath(path, p)
+        }
+    }
+
+    /** Resize: a frame with a diagonal double arrow. */
+    fun resize(c: Canvas, cx: Float, cy: Float, s: Float, p: Paint) {
+        stroke(p, s)
+        val r = s * 0.34f
+        rect.set(cx - r, cy - r, cx + r, cy + r)
+        c.drawRoundRect(rect, r * 0.25f, r * 0.25f, p)
+        val d = r * 0.5f; val a = r * 0.3f
+        c.drawLine(cx - d, cy + d, cx + d, cy - d, p)
+        c.drawLine(cx + d, cy - d, cx + d - a, cy - d, p); c.drawLine(cx + d, cy - d, cx + d, cy - d + a, p)
+        c.drawLine(cx - d, cy + d, cx - d + a, cy + d, p); c.drawLine(cx - d, cy + d, cx - d, cy + d - a, p)
+    }
+
+    /** 2x2 grid of dots: opens the toolbar. */
+    fun grid(c: Canvas, cx: Float, cy: Float, s: Float, p: Paint) {
+        p.style = Paint.Style.FILL
+        val o = s * 0.17f; val r = s * 0.075f
+        for (dx in listOf(-o, o)) for (dy in listOf(-o, o)) c.drawCircle(cx + dx, cy + dy, r, p)
+        p.style = Paint.Style.STROKE
+    }
+
+    fun close(c: Canvas, cx: Float, cy: Float, s: Float, p: Paint) {
+        stroke(p, s)
+        val d = s * 0.2f
+        c.drawLine(cx - d, cy - d, cx + d, cy + d, p)
+        c.drawLine(cx - d, cy + d, cx + d, cy - d, p)
+    }
 }

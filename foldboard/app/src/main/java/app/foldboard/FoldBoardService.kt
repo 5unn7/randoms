@@ -34,6 +34,7 @@ class FoldBoardService : InputMethodService(), KeyboardListener, StripListener, 
     private lateinit var clipboard: ClipboardHistory
     private lateinit var voice: VoiceInput
 
+    private var root: LinearLayout? = null
     private var strip: SuggestionStrip? = null
     private var keyboard: KeyboardView? = null
     private var content: FrameLayout? = null
@@ -91,11 +92,15 @@ class FoldBoardService : InputMethodService(), KeyboardListener, StripListener, 
         root.addView(s, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
         root.addView(c, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
         root.setOnApplyWindowInsetsListener { v, insets ->
-            val nav = if (Build.VERSION.SDK_INT >= 30) insets.getInsets(WindowInsets.Type.navigationBars()).bottom
-            else @Suppress("DEPRECATION") insets.systemWindowInsetBottom
-            v.setPadding(0, 0, 0, nav + dp(prefs.bottomPadding))
+            navInset = if (Build.VERSION.SDK_INT >= 30) insets.getInsets(WindowInsets.Type.navigationBars()).bottom
+            else {
+                @Suppress("DEPRECATION")
+                insets.systemWindowInsetBottom
+            }
+            applyBottomPadding()
             insets
         }
+        this.root = root
         strip = s; keyboard = k; content = c
         emojiPanel = null; clipPanel = null
         applySettings()
@@ -119,6 +124,7 @@ class FoldBoardService : InputMethodService(), KeyboardListener, StripListener, 
 
     override fun onFinishInputView(finishingInput: Boolean) {
         if (voice.listening) voice.stop()
+        keyboard?.resizeMode = false
         logic.finishInput()
         keyboard?.cancelAll()
         Engines.save(this)
@@ -131,6 +137,12 @@ class FoldBoardService : InputMethodService(), KeyboardListener, StripListener, 
     }
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
+
+    private var navInset = 0
+
+    private fun applyBottomPadding() {
+        root?.setPadding(0, 0, 0, navInset + dp(prefs.bottomPadding) + dp(prefs.bottomOffset(unfolded)))
+    }
 
     /** Re-read settings and rebuild the layout for the current posture (folded / unfolded). */
     private fun applySettings() {
@@ -163,16 +175,24 @@ class FoldBoardService : InputMethodService(), KeyboardListener, StripListener, 
             centerPanel = split && prefs.centerPanel,
             splitGap = prefs.splitGap / 10f,
             micKey = prefs.micKey,
+            backspaceKey = prefs.backspaceKey,
         )
         val layout = LayoutFactory.build(spec)
         if (page == Page.LETTERS) {
             lettersLayout = layout
             logic.engine?.setLayout(layout)
         }
-        val rowDp = if (unfolded) 62f else 54f
-        val scale = (if (unfolded) prefs.heightUnfolded else prefs.heightFolded) / 100f
+        val insetL = prefs.insetLeft(unfolded) / 1000f
+        val insetR = prefs.insetRight(unfolded) / 1000f
+        // Row height follows key width so keys keep good proportions on every screen; the user's
+        // height setting scales from there.
+        val widthDp = resources.configuration.screenWidthDp * (1f - insetL - insetR)
+        val unitDp = widthDp / layout.width
+        val natural = if (shape == KeyShape.HEX) unitDp / (1.1547f * 0.8f) else unitDp * 1.3f
+        val rowDp = natural.coerceIn(if (unfolded) 46f else 44f, if (unfolded) 64f else 58f)
+        val scale = prefs.height(unfolded) / 100f
         val rows = layout.rows + if (shape == KeyShape.HEX) 1f / 3f else 0f
-        keyboardHeightPx = (rows * rowDp * scale * resources.displayMetrics.density + dp(6)).toInt()
+        keyboardHeightPx = (rows * rowDp * scale * resources.displayMetrics.density + dp(8)).toInt()
         k.theme = theme
         k.config = ViewConfig(
             heightPx = keyboardHeightPx,
@@ -183,12 +203,17 @@ class FoldBoardService : InputMethodService(), KeyboardListener, StripListener, 
             swipeUpCaps = prefs.swipeUpCaps,
             swipeDownSymbol = prefs.swipeDownSymbol,
             swipeLeftDelete = prefs.swipeLeftDelete,
+            swipeLeftChars = prefs.swipeLeftChars,
             swipeRightRestore = prefs.swipeRightRestore,
             spaceCursor = prefs.spaceCursor,
+            spaceSelect = prefs.spaceSelect,
             glide = prefs.glide,
             longPressMs = prefs.longPressMs,
             keyPopup = prefs.keyPopup,
+            insetLeft = insetL,
+            insetRight = insetR,
         )
+        applyBottomPadding()
         k.spaceLabel = Prefs.LANGUAGES.firstOrNull { it.first == prefs.language }?.second ?: ""
         k.layout = layout
         k.shift = logic.shift
@@ -278,10 +303,71 @@ class FoldBoardService : InputMethodService(), KeyboardListener, StripListener, 
         else -> false
     }
 
+    override fun onDeleteScrub(count: Int) {
+        feedback.keyPress(special = false)
+        logic.deleteScrub(count)
+    }
+    override fun onDeleteScrubEnd() = logic.deleteScrubEnd()
     override fun onDeleteWord() = logic.deleteWord()
     override fun onRestoreWord() = logic.restoreWord()
-    override fun onCursorMove(delta: Int) = logic.moveCursor(delta)
+    override fun onSelectStart() { feedback.keyPress(true); logic.selectStart() }
+    override fun onSelectEnd() = logic.selectEnd()
+    override fun onCursorMove(dx: Int, dy: Int, select: Boolean) {
+        feedback.keyPress(special = false)
+        logic.moveCursor(dx, dy, select)
+    }
     override fun onGlide(xs: FloatArray, ys: FloatArray, count: Int) = logic.onGlide(xs, ys, count)
+
+    // ------------------------------------------------------------------ resize (Samsung-style handles)
+
+    private var rHeight = 100f
+    private var rLeft = 0f
+    private var rRight = 0f
+    private var rBottom = 0f
+
+    private fun enterResize() {
+        showKeys()
+        rHeight = prefs.height(unfolded).toFloat()
+        rLeft = prefs.insetLeft(unfolded).toFloat()
+        rRight = prefs.insetRight(unfolded).toFloat()
+        rBottom = prefs.bottomOffset(unfolded).toFloat()
+        keyboard?.resizeMode = true
+        flash("Resize: drag the handles, then tap Done")
+    }
+
+    override fun onResize(dHeight: Float, dLeft: Float, dRight: Float, dBottom: Float) {
+        val w = (keyboard?.width ?: 1).coerceAtLeast(1)
+        if (dHeight != 0f && keyboardHeightPx > 0) rHeight = (rHeight * (keyboardHeightPx + dHeight) / keyboardHeightPx).coerceIn(55f, 170f)
+        val pmL = dLeft / w * 1000f
+        val pmR = dRight / w * 1000f
+        if (dLeft != 0f && dRight != 0f && pmL == -pmR) {
+            // Move: shift sideways within the screen.
+            val shift = pmL.coerceIn(-rLeft, rRight)
+            rLeft += shift; rRight -= shift
+        } else {
+            rLeft = (rLeft + pmL).coerceIn(0f, 500f - rRight)
+            rRight = (rRight + pmR).coerceIn(0f, 500f - rLeft)
+        }
+        rBottom = (rBottom + dBottom / resources.displayMetrics.density).coerceIn(0f, 240f)
+        val e = prefs.sp.edit()
+        e.putInt(if (unfolded) Prefs.HEIGHT_UNFOLDED else Prefs.HEIGHT_FOLDED, rHeight.toInt())
+        e.putInt(if (unfolded) Prefs.INSET_L_U else Prefs.INSET_L_F, rLeft.toInt())
+        e.putInt(if (unfolded) Prefs.INSET_R_U else Prefs.INSET_R_F, rRight.toInt())
+        e.putInt(if (unfolded) Prefs.BOTTOM_U else Prefs.BOTTOM_F, rBottom.toInt())
+        e.apply()
+        applyLayout()
+    }
+
+    override fun onResizeDone(reset: Boolean) {
+        if (reset) {
+            rHeight = 100f; rLeft = 0f; rRight = 0f; rBottom = 0f
+            onResize(0f, 0f, 0f, 0f)
+            return
+        }
+        keyboard?.resizeMode = false
+        emojiPanel?.layoutParams?.height = keyboardHeightPx
+        clipPanel?.layoutParams?.height = keyboardHeightPx
+    }
 
     // ------------------------------------------------------------------ StripListener
 
@@ -298,6 +384,9 @@ class FoldBoardService : InputMethodService(), KeyboardListener, StripListener, 
             StripButton.SETTINGS -> openSettings()
             StripButton.CLIPBOARD -> toggleClipboard()
             StripButton.MIC -> toggleVoice()
+            StripButton.EMOJI -> showEmoji()
+            StripButton.RESIZE -> enterResize()
+            StripButton.HIDE -> requestHideSelf(0)
         }
     }
 
@@ -318,7 +407,7 @@ class FoldBoardService : InputMethodService(), KeyboardListener, StripListener, 
         }
         if (!voice.isAvailable()) { flash("No speech recognizer installed on this device"); return }
         logic.beginVoice()
-        voice.start(languageTag(prefs.language), prefs.voiceContinuous, prefs.voiceOffline)
+        voice.start(languageTag(prefs.language), prefs.voiceContinuous, prefs.voiceOffline, prefs.voiceSilenceSec)
     }
 
     private fun languageTag(lang: String): String {
@@ -340,6 +429,8 @@ class FoldBoardService : InputMethodService(), KeyboardListener, StripListener, 
         logic.voiceFinal(VoiceText.process(text, prefs.language, prefs.voiceCommands))
         if (voice.listening) strip?.voiceText = ""
     }
+
+    override fun onVoiceLevel(level: Float) { strip?.micLevel = level }
 
     override fun onVoiceState(listening: Boolean, error: String?) {
         strip?.voiceText = if (listening) "" else null

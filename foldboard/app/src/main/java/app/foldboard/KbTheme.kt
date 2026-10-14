@@ -17,7 +17,14 @@ data class KbTheme(
     val popup: Int,
     val divider: Int,
     val dark: Boolean,
+    val shadow: Int = if (dark) 0x66000000 else 0x2E000000,
 ) {
+    /** Accent darkened for the pressed enter key. */
+    val accentPressed: Int get() {
+        val r = ((accent shr 16) and 0xFF) * 3 / 4; val g = ((accent shr 8) and 0xFF) * 3 / 4; val b = (accent and 0xFF) * 3 / 4
+        return (0xFF shl 24) or (r shl 16) or (g shl 8) or b
+    }
+
     companion object {
         fun resolve(context: Context, prefs: Prefs): KbTheme {
             val accent = Prefs.ACCENTS.firstOrNull { it.first == prefs.accent }?.second ?: Prefs.ACCENTS[0].second
@@ -31,10 +38,10 @@ data class KbTheme(
         }
 
         fun dark(accent: Int) = KbTheme(
-            background = 0xFF0B0B0D.toInt(), key = 0xFF353538.toInt(), keyFunction = 0xFF26262A.toInt(),
-            keySpace = 0xFF5E5E64.toInt(), keyPressed = 0xFF77777E.toInt(), text = 0xFFF2F2F4.toInt(),
+            background = 0xFF0E0F12.toInt(), key = 0xFF2F3036.toInt(), keyFunction = 0xFF232429.toInt(),
+            keySpace = 0xFF4A4C55.toInt(), keyPressed = 0xFF5C5F6A.toInt(), text = 0xFFF2F2F4.toInt(),
             textDim = 0xFF9A9AA2.toInt(), accent = accent, onAccent = 0xFFFFFFFF.toInt(),
-            strip = 0xFF141417.toInt(), popup = 0xFF4A4A50.toInt(), divider = 0xFF2A2A2E.toInt(), dark = true,
+            strip = 0xFF0E0F12.toInt(), popup = 0xFF464851.toInt(), divider = 0xFF2A2B31.toInt(), dark = true,
         )
 
         fun amoled(accent: Int) = KbTheme(

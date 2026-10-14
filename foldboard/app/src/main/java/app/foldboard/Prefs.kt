@@ -19,6 +19,7 @@ class Prefs(context: Context) {
     val centerPanel get() = b(CENTER_PANEL, true)
     val oneHanded get() = s(ONE_HANDED, "off")           // off | left | right
     val micKey get() = b(MIC_KEY, true)
+    val backspaceKey get() = b(BACKSPACE_KEY, false)
 
     // Size
     val heightFolded get() = i(HEIGHT_FOLDED, 100)
@@ -47,8 +48,10 @@ class Prefs(context: Context) {
     val swipeUpCaps get() = b(SWIPE_UP, true)
     val swipeDownSymbol get() = b(SWIPE_DOWN, true)
     val swipeLeftDelete get() = b(SWIPE_LEFT, true)
+    val swipeLeftChars get() = s(SWIPE_LEFT_MODE, "char") == "char"
     val swipeRightRestore get() = b(SWIPE_RIGHT, true)
     val spaceCursor get() = b(SPACE_CURSOR, true)
+    val spaceSelect get() = b(SPACE_SELECT, true)
     val glide get() = b(GLIDE, false)
     val longPressMs get() = i(LONG_PRESS, 320)
 
@@ -61,6 +64,13 @@ class Prefs(context: Context) {
     val voiceContinuous get() = b(VOICE_CONTINUOUS, true)
     val voiceCommands get() = b(VOICE_COMMANDS, true)
     val voiceOffline get() = b(VOICE_OFFLINE, true)
+    val voiceSilenceSec get() = i(VOICE_SILENCE, 20)
+
+    // Resize (per posture): side insets in per-mille of the width, extra bottom offset in dp.
+    fun insetLeft(unfolded: Boolean) = i(if (unfolded) INSET_L_U else INSET_L_F, 0)
+    fun insetRight(unfolded: Boolean) = i(if (unfolded) INSET_R_U else INSET_R_F, 0)
+    fun bottomOffset(unfolded: Boolean) = i(if (unfolded) BOTTOM_U else BOTTOM_F, 0)
+    fun height(unfolded: Boolean) = if (unfolded) heightUnfolded else heightFolded
 
     // Look
     val theme get() = s(THEME, "system")                 // system | dark | amoled | light
@@ -78,6 +88,16 @@ class Prefs(context: Context) {
         const val CENTER_PANEL = "center_panel"
         const val ONE_HANDED = "one_handed"
         const val MIC_KEY = "mic_key"
+        const val BACKSPACE_KEY = "backspace_key"
+        const val SWIPE_LEFT_MODE = "swipe_left_mode"
+        const val SPACE_SELECT = "space_select"
+        const val VOICE_SILENCE = "voice_silence"
+        const val INSET_L_F = "inset_l_f"
+        const val INSET_R_F = "inset_r_f"
+        const val BOTTOM_F = "bottom_f"
+        const val INSET_L_U = "inset_l_u"
+        const val INSET_R_U = "inset_r_u"
+        const val BOTTOM_U = "bottom_u"
         const val HEIGHT_FOLDED = "height_folded"
         const val HEIGHT_UNFOLDED = "height_unfolded"
         const val SPLIT_GAP = "split_gap"

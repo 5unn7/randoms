@@ -39,8 +39,23 @@ class TextEngine(
 
     init { rebuildUserLexicon() }
 
-    fun setLayout(layout: KeyboardLayout?) { cost.layout = layout }
+    private val glide = GlideDecoder(main)
 
+    @Synchronized
+    fun setLayout(layout: KeyboardLayout?) { cost.layout = layout; glide.setLayout(layout) }
+
+    /** Decode a glide stroke (layout units) into candidate words, best first. */
+    @Synchronized
+    fun decodeGlide(xs: FloatArray, ys: FloatArray, count: Int, prev: String?, limit: Int = 5): List<String> {
+        val words = glide.decode(xs, ys, count, limit * 2)
+        // Light re-rank with personal usage and context.
+        return words.withIndex()
+            .sortedByDescending { (i, w) -> -i * 0.6f + personalBonus(w) + contextBonus(prev, w) }
+            .map { it.value }
+            .take(limit)
+    }
+
+    @Synchronized
     fun rebuildUserLexicon() {
         user = Trie()
         for ((w, c) in learning.words) if (isLearned(w, c)) user.put(w, userFreq(c))
@@ -51,6 +66,7 @@ class TextEngine(
 
     private fun userFreq(count: Int) = 3.8f + min(1.5f, 0.5f * log2(count.toFloat()))
 
+    @Synchronized
     fun isKnown(word: String): Boolean {
         val lower = word.lowercase()
         return main.find(lower) >= 0 || user.find(lower) >= 0 || lower in ignored
@@ -58,6 +74,7 @@ class TextEngine(
 
     // ------------------------------------------------------------------ suggestions
 
+    @Synchronized
     fun suggest(word: TypedWord, prev: String?, limit: Int = 5, level: AutocorrectLevel = AutocorrectLevel.NORMAL): SuggestionResult {
         val typed = word.text
         val lower = word.lower
@@ -170,6 +187,7 @@ class TextEngine(
     // ------------------------------------------------------------------ predictions
 
     /** Next-word predictions after [prev] (null = start of text). */
+    @Synchronized
     fun predict(prev: String?, limit: Int = 5, capitalize: Boolean = false): List<String> {
         val out = LinkedHashMap<String, Float>()
         if (prev != null) {
@@ -201,6 +219,7 @@ class TextEngine(
     // ------------------------------------------------------------------ learning
 
     /** Called for every word committed in a normal (non-password) field. */
+    @Synchronized
     fun learn(word: String, prev: String?) {
         if (word.isEmpty() || !word.any { it.isLetter() }) return
         val wasLearned = isLearned(word, learning.countOf(word))
@@ -210,12 +229,14 @@ class TextEngine(
     }
 
     /** The user undid an autocorrection: respect their word from now on. */
+    @Synchronized
     fun rejectCorrection(original: String) {
         ignored += original.lowercase()
         learning.addWord(original, 2)
         if (main.find(original) < 0) user.put(original, userFreq(learning.countOf(original)))
     }
 
+    @Synchronized
     fun forget(word: String) {
         learning.removeWord(word)
         ignored -= word.lowercase()

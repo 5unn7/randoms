@@ -45,3 +45,12 @@ class GlideTest {
         assertEquals(Gesture.SWIPE_RIGHT, GestureClassifier.classify(1.5f, 0.2f))
     }
 }
+
+class VoiceTextTest {
+    @Test fun spokenPunctuation() {
+        assertEquals("Hello, how are you? I'm fine.", app.foldboard.core.text.VoiceText.join("", app.foldboard.core.text.VoiceText.process("hello comma how are you question mark i'm fine period", "en", true), true))
+        assertEquals("one\nTwo", app.foldboard.core.text.VoiceText.process("one new line two", "en", true))
+        assertEquals(" and more", app.foldboard.core.text.VoiceText.join("Some text", "and more", true))
+        assertEquals("Next", app.foldboard.core.text.VoiceText.join("Done. ", "next", true))
+    }
+}

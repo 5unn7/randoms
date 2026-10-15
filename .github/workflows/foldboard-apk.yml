@@ -30,22 +30,22 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      # Keep one debug signing key across runs so new APKs install over old ones
-      # (used only when no release keystore secret is configured).
-      - name: Restore signing key
-        uses: actions/cache@v4
-        with:
-          path: ~/.android/debug.keystore
-          key: foldboard-debug-keystore-v1
-
-      - name: Release keystore from secrets (optional)
+      # Every build must be signed with the same key or Android refuses to update the app.
+      # The key file is committed but locked with a strong password kept in a repo secret.
+      - name: Signing key
         env:
-          KEYSTORE_B64: ${{ secrets.FOLDBOARD_KEYSTORE_BASE64 }}
+          KEY_PASSWORD: ${{ secrets.FOLDBOARD_KEY_PASSWORD }}
         run: |
-          if [ -n "$KEYSTORE_B64" ]; then
-            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
-            echo "FOLDBOARD_KEYSTORE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+          if [ -z "$KEY_PASSWORD" ]; then
+            echo "::error::Add the repository secret FOLDBOARD_KEY_PASSWORD (Settings > Secrets and variables > Actions) so APKs are signed with the permanent FoldBoard key."
+            exit 1
           fi
+          {
+            echo "FOLDBOARD_KEYSTORE=$GITHUB_WORKSPACE/foldboard/signing/foldboard-release.p12"
+            echo "FOLDBOARD_KEYSTORE_PASSWORD=$KEY_PASSWORD"
+            echo "FOLDBOARD_KEY_PASSWORD=$KEY_PASSWORD"
+            echo "FOLDBOARD_KEY_ALIAS=foldboard"
+          } >> "$GITHUB_ENV"
 
       - name: Engine unit tests
         run: ./gradlew :core:test --no-daemon
@@ -53,9 +53,6 @@ jobs:
       - name: Build APK
         env:
           VERSION_CODE: ${{ github.run_number }}
-          FOLDBOARD_KEYSTORE_PASSWORD: ${{ secrets.FOLDBOARD_KEYSTORE_PASSWORD }}
-          FOLDBOARD_KEY_ALIAS: ${{ secrets.FOLDBOARD_KEY_ALIAS }}
-          FOLDBOARD_KEY_PASSWORD: ${{ secrets.FOLDBOARD_KEY_PASSWORD }}
         run: |
           ./gradlew :app:assembleRelease --no-daemon
           mkdir -p dist

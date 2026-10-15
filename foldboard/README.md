@@ -48,10 +48,10 @@ cd foldboard
 
 ### Signing
 
-Without secrets, CI signs with a cached debug key so new builds install over old ones.
-For a permanent key, add these repository secrets: `FOLDBOARD_KEYSTORE_BASE64` (base64 of a `.jks`),
-`FOLDBOARD_KEYSTORE_PASSWORD`, `FOLDBOARD_KEY_ALIAS`, `FOLDBOARD_KEY_PASSWORD`.
-Switching keys requires uninstalling the old build once.
+All builds are signed with one permanent key so new versions install over old ones.
+The key, `signing/foldboard-release.p12`, is committed but protected by a strong password
+that lives only in the repository secret `FOLDBOARD_KEY_PASSWORD`. CI refuses to build without it.
+Never commit that password: anyone with both could sign a fake update of a keyboard that sees everything you type.
 
 ### Dictionaries
 

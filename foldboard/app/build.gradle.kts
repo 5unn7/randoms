@@ -24,6 +24,7 @@ android {
         if (keystorePath != null) {
             create("release") {
                 storeFile = file(keystorePath)
+                if (keystorePath.endsWith(".p12")) storeType = "pkcs12"
                 storePassword = System.getenv("FOLDBOARD_KEYSTORE_PASSWORD")
                 keyAlias = System.getenv("FOLDBOARD_KEY_ALIAS")
                 keyPassword = System.getenv("FOLDBOARD_KEY_PASSWORD")
